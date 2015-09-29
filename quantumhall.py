@@ -52,6 +52,7 @@ class AppForm(QMainWindow):
         self.p1.setDownsampling(mode='peak')
         self.p1.setClipToView(True)
         self.p1.enableAutoRange(x=True)
+        self.p1.enableAutoRange(y=True)
         self.driveCurrent = 1.0
     
     def input_validator(self):
@@ -123,7 +124,7 @@ class AppForm(QMainWindow):
         self.update = update
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(70)
+        self.timer.start(50)
 
     def stopGraphing(self):
         choice = QMessageBox.question(self, 'End', 'Stop?',\
@@ -138,7 +139,6 @@ class AppForm(QMainWindow):
             pass
 
 if __name__ == "__main__":
-    import sys
     app = QApplication(sys.argv)
     form = AppForm()
     form.show()
