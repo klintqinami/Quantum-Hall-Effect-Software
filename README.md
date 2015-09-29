@@ -5,6 +5,9 @@ the Quantum Hall Effect experiment in the Physics department.
 
 It makes heavy use of PyQt4 and pyqtgraph for fast live plotting. It also 
 relies on PyVISA to supply the backend used to query the machines for data.
+PyVISA currently requires that National Instruments Visa is installed and
+configured, though hopefully open-source projects will replace this in the
+near future.
 
 The user inputs an estimated drive current and then clicks the start
 button to begin collecting data. The stop button is only pressed at 
