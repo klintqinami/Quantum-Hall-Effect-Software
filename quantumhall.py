@@ -13,12 +13,11 @@ class AppForm(QMainWindow):
     
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
-        self.create_main_frame()
+        self.createMain()
         self.setGeometry(100, 100, 800, 800)
         self.setWindowTitle("Quantum Hall Experiment") 
-        self.getInsts()
 
-    def create_main_frame(self):        
+    def createMain(self):        
         page = QWidget()        
         self.save = QPushButton("Save CSVs", self)
         self.save.clicked.connect(self.saveCSV)
@@ -28,7 +27,7 @@ class AppForm(QMainWindow):
         self.edit1 = QLineEdit()
         self.edit1.setMaxLength(8)
         self.start = QPushButton("Start", self)
-        self.start.clicked.connect(self.startGraphing)
+        self.start.clicked.connect(self.instValidator)
         self.start.resize(self.start.minimumSizeHint())
         self.stop = QPushButton("Stop", self)
         self.stop.clicked.connect(self.stopGraphing)
@@ -46,7 +45,7 @@ class AppForm(QMainWindow):
         self.p1.setLabel('left', 'Resistance', units='ohms')
         self.p1.setLabel('bottom', 'B-Field', units='tesla')
         vbox1.addWidget(self.p1)
-        self.button.clicked.connect(self.input_validator)
+        self.button.clicked.connect(self.inputValidator)
         pg.setConfigOptions(antialias=True)
         self.curve = self.p1.plot(pen='r')
         self.p1.setDownsampling(mode='peak')
@@ -55,10 +54,11 @@ class AppForm(QMainWindow):
         self.p1.enableAutoRange(y=True)
         self.driveCurrent = 1.0
     
-    def input_validator(self):
+    def inputValidator(self):
         number = self.edit1.text()
         try:
             self.driveCurrent = float(number)
+            # QMessageBox.about(self, 'Success','Drive Current set successfuly.')
         except Exception:
             QMessageBox.about(self, 'Error','Input can only be a number')
             pass
@@ -67,6 +67,10 @@ class AppForm(QMainWindow):
         name = QFileDialog.getSaveFileName(self, "Save File")
         exporter = pg.exporters.CSVExporter(self.p1.plotItem)
         exporter.export(name)
+        self.start.setEnabled(True)
+        self.stop.setEnabled(True)
+        self.button.setEnabled(True)
+        self.edit1.setEnabled(True)
     
     def getInsts(self):
         rm = visa.ResourceManager()
@@ -87,9 +91,9 @@ class AppForm(QMainWindow):
         y = self.voltmeter2.query_ascii_values('CURV?')
         y = y[0]
         y = y / self.driveCurrent
-        return y
+        return abs(y)
     
-    def close_application(self):
+    def closeApp(self):
         choice = QtGui.QMessageBox.question(self, 'Exit', 'Quit?',\
             QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
         if choice == QtGui.QMessageBox.Yes:
@@ -102,6 +106,15 @@ class AppForm(QMainWindow):
         y = random.uniform(1, 100)
         return x, y
     
+    def instValidator(self):
+        try:
+            self.getInsts()
+            self.startGraphing()
+        except Exception:
+            QMessageBox.about(self, 'Error','Something went wrong when trying to \
+                communicate with the instruments. \n\nMake sure they are turned on.')
+            pass
+
     def startGraphing(self):
         self.data3 = np.empty(100)
         self.data4 = np.empty(100)
@@ -124,7 +137,7 @@ class AppForm(QMainWindow):
         self.update = update
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(50)
+        self.timer.start(70)
 
     def stopGraphing(self):
         choice = QMessageBox.question(self, 'End', 'Stop?',\
