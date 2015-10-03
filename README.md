@@ -10,9 +10,9 @@ configured, though hopefully open-source projects will replace this in the
 near future.
 
 The user inputs an estimated drive current and then clicks the start
-button to begin collecting data. The stop button is only pressed at 
-the end of the experiment, where the user will be locked out of pressing
-any buttons except the save button. 
+button to begin collecting data. After clicking the stop button, the user
+must save the data before being allowed to click start again. This is
+to avoid unfortunate mouse slips.
 
 The software, assuming the dependencies listed in the requirements file are 
 met, will run on Linux, Windows, and OSX.
