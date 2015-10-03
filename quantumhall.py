@@ -5,20 +5,20 @@ import pyqtgraph as pg
 import visa
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import random
 import pyqtgraph.exporters
 
+
 class AppForm(QMainWindow):
-    
-    
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.createMain()
         self.setGeometry(100, 100, 800, 800)
-        self.setWindowTitle("Quantum Hall Experiment") 
+        self.setWindowTitle("Quantum Hall Experiment")
 
-    def createMain(self):        
-        page = QWidget()        
+    def createMain(self):
+        '''Create the main application window. Should display an input 
+        bar and 4 push buttons. An empy graph should also appear.'''
+        page = QWidget()
         self.save = QPushButton("Save CSVs", self)
         self.save.clicked.connect(self.saveCSV)
         self.save.resize(self.save.minimumSizeHint())
@@ -40,7 +40,6 @@ class AppForm(QMainWindow):
         page.setLayout(vbox1)
         self.setCentralWidget(page)
         self.p1 = pg.PlotWidget()
-        self.p1.setRange(xRange=[0, 10], yRange=[0, 100])
         self.p1.setTitle("Resistance vs B-Field")
         self.p1.setLabel('left', 'Resistance', units='ohms')
         self.p1.setLabel('bottom', 'B-Field', units='tesla')
@@ -53,17 +52,19 @@ class AppForm(QMainWindow):
         self.p1.enableAutoRange(x=True)
         self.p1.enableAutoRange(y=True)
         self.driveCurrent = 1.0
-    
+
     def inputValidator(self):
+        '''Validates that the drive current is an actual number'''
         number = self.edit1.text()
         try:
             self.driveCurrent = float(number)
-            # QMessageBox.about(self, 'Success','Drive Current set successfuly.')
+        # QMessageBox.about(self, 'Success','Drive Current set successfuly.')
         except Exception:
-            QMessageBox.about(self, 'Error','Input can only be a number')
+            QMessageBox.about(self, 'Error', 'Input can only be a number')
             pass
-    
+
     def saveCSV(self):
+        '''Saves data in CSV format and enables buttons'''
         name = QFileDialog.getSaveFileName(self, "Save File")
         exporter = pg.exporters.CSVExporter(self.p1.plotItem)
         exporter.export(name)
@@ -71,8 +72,15 @@ class AppForm(QMainWindow):
         self.stop.setEnabled(True)
         self.button.setEnabled(True)
         self.edit1.setEnabled(True)
-    
+
     def getInsts(self):
+        '''Gets instruments using resource manager. It assumes that the
+        instruments are the 3rd and 4th instruments when resource manager
+        is called. If software is used on a different computer, the calls to 
+        instruments[2] and instruments[3] must be changed accordingly. 
+        Instruments[2] tries to connect to the device measuring current.
+        Instrument[3] tries to connect to the device measuring voltage.
+        Sample GPIB instrument name: GPIB::2::INSTR'''
         rm = visa.ResourceManager()
         instruments = rm.list_resources()
         self.voltmeter1 = rm.open_resource(instruments[2])
@@ -80,39 +88,46 @@ class AppForm(QMainWindow):
         # self.voltmeter1.values_format.container = np.array
         # self.voltmeter2.values_format.container = np.array
         return self.voltmeter1, self.voltmeter2
-    
+
     def getValuesX(self):
+        '''Measures current and multiplies by the manufacturer specified
+        conversion, currently set to 0.1149'''
         x = self.voltmeter1.query_ascii_values('MEAS:CURR?')
-        x = x[0]
-        x = x * 0.1149 
+        x = x[0] * 0.1149
         return x
-    
+
     def getValuesY(self):
+        '''Measures voltage and divides by user input for drive current'''
         y = self.voltmeter2.query_ascii_values('CURV?')
-        y = y[0]
-        y = y / self.driveCurrent
+        y = y[0] / self.driveCurrent
         return abs(y)
-    
+
     def closeApp(self):
-        choice = QtGui.QMessageBox.question(self, 'Exit', 'Quit?',\
-            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        '''Exits application. Has not been integrated into application.'''
+        choice = QtGui.QMessageBox.question(
+           self, 'Exit', 'Quit?', QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
         if choice == QtGui.QMessageBox.Yes:
             sys.exit()
         else:
             pass
-    
+
     def dataSim(self):
+        '''Used to simulate data during testing of software.'''
         x = random.uniform(1, 9)
         y = random.uniform(1, 100)
         return x, y
-    
+
     def instValidator(self):
+        '''Tries to start graphing using instruments. Throws an exception and
+        gives user a warning if machines are unresponsive.'''
         try:
             self.getInsts()
             self.startGraphing()
         except Exception:
-            QMessageBox.about(self, 'Error','Something went wrong when trying to \
-                communicate with the instruments. \n\nMake sure they are turned on.')
+            QMessageBox.about(self, 'Error', 
+                'Instruments are either off or unresponsive. \
+                 \n\nTurn on instruments. \
+                 \n\nIf error persists, check GPIB ports.')
             pass
 
     def startGraphing(self):
@@ -121,6 +136,7 @@ class AppForm(QMainWindow):
         self.ptr3 = 0
 
         def update():
+            '''Updates graph and maintains left-to-right live plotting'''
             self.data3[self.ptr3] = self.getValuesX()
             self.data4[self.ptr3] = self.getValuesY()
             self.ptr3 += 1
@@ -137,11 +153,13 @@ class AppForm(QMainWindow):
         self.update = update
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(70)
+        self.timer.start(70) # argument controls speed of plotting
 
     def stopGraphing(self):
-        choice = QMessageBox.question(self, 'End', 'Stop?',\
-            QMessageBox.Yes | QMessageBox.No)
+        '''Stops collecting data and locks user out of all buttons except
+        the save button. Buttons are reenabled once user saves data run.'''
+        choice = QMessageBox.question(self, 'End', 'Stop?',
+                                      QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:
             self.timer.stop()
             self.start.setEnabled(False)
@@ -156,4 +174,3 @@ if __name__ == "__main__":
     form = AppForm()
     form.show()
     app.exec_()
-
