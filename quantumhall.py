@@ -162,6 +162,7 @@ class AppForm(QMainWindow):
         choice = QMessageBox.question(self, 'End', 'Stop?',
                                       QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:
+            self.timer = pg.QtCore.QTimer()
             self.timer.stop()
             self.start.setEnabled(False)
             self.stop.setEnabled(False)
