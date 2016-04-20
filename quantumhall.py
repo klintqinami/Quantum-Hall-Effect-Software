@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import pyqtgraph as pg
-import visa
-from PyQt4.QtCore import *
+#import pyqtgraph as pg
+#import visa
+#from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import pyqtgraph.exporters
 
@@ -58,7 +58,8 @@ class AppForm(QMainWindow):
         number = self.edit1.text()
         try:
             self.driveCurrent = float(number)
-        # QMessageBox.about(self, 'Success','Drive Current set successfuly.')
+            message = "Drive Current set to " + str(number)
+            QMessageBox.about(self, 'Success', message)
         except Exception:
             QMessageBox.about(self, 'Error', 'Input can only be a number')
             pass
@@ -81,7 +82,7 @@ class AppForm(QMainWindow):
         Instruments[2] tries to connect to the device measuring current.
         Instrument[3] tries to connect to the device measuring voltage.
         Sample GPIB instrument name: GPIB::2::INSTR'''
-        rm = visa.ResourceManager()
+        rm = visa.ResourceManager('@py')
         instruments = rm.list_resources()
         self.voltmeter1 = rm.open_resource(instruments[2])
         self.voltmeter2 = rm.open_resource(instruments[3])
