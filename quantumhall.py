@@ -66,13 +66,17 @@ class AppForm(QMainWindow):
 
     def saveCSV(self):
         '''Saves data in CSV format and enables buttons'''
-        name = QFileDialog.getSaveFileName(self, "Save File")
-        exporter = pg.exporters.CSVExporter(self.p1.plotItem)
-        exporter.export(name)
-        self.start.setEnabled(True)
-        self.stop.setEnabled(True)
-        self.button.setEnabled(True)
-        self.edit1.setEnabled(True)
+        try:
+            name = QFileDialog.getSaveFileName(self, "Save File")
+            exporter = pg.exporters.CSVExporter(self.p1.plotItem)
+            exporter.export(name)
+        except Exception:
+            QMessageBox.about(self, 'Error', 'Nothing was saved.')
+        finally:
+            self.start.setEnabled(True)
+            self.stop.setEnabled(True)
+            self.button.setEnabled(True)
+            self.edit1.setEnabled(True)
 
     def getInsts(self):
         '''Gets instruments using resource manager. It assumes that the
