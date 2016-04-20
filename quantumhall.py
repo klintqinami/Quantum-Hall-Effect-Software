@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-#import pyqtgraph as pg
-#import visa
-#from PyQt4.QtCore import *
+import pyqtgraph as pg
+import visa
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import pyqtgraph.exporters
 
