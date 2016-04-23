@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pyqtgraph as pg
 import visa
+import subprocess
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import pyqtgraph.exporters
@@ -46,7 +47,7 @@ class AppForm(QMainWindow):
         vbox1.addWidget(self.p1)
         self.button.clicked.connect(self.inputValidator)
         pg.setConfigOptions(antialias=True)
-        self.curve = self.p1.plot(pen='r')
+        self.curve = self.p1.plot(pen='b')
         self.p1.setDownsampling(mode='peak')
         self.p1.setClipToView(True)
         self.p1.enableAutoRange(x=True)
@@ -80,16 +81,17 @@ class AppForm(QMainWindow):
 
     def getInsts(self):
         '''Gets instruments using resource manager. It assumes that the
-        instruments are the 3rd and 4th instruments when resource manager
+        instruments are the 2rd and 3th instruments when resource manager
         is called. If software is used on a different computer, the calls to 
-        instruments[2] and instruments[3] must be changed accordingly. 
-        Instruments[2] tries to connect to the device measuring current.
-        Instrument[3] tries to connect to the device measuring voltage.
-        Sample GPIB instrument name: GPIB::2::INSTR'''
+        instruments[1] and instruments[2] must be changed accordingly. 
+        Instruments[1] tries to connect to the device measuring current.
+        Instrument[2] tries to connect to the device measuring voltage.
+        Sample GPIB instrument name: GPIB::5::INSTR'''
+        subprocess.check_call("gpib_config")
         rm = visa.ResourceManager('@py')
         instruments = rm.list_resources()
-        self.voltmeter1 = rm.open_resource(instruments[2])
-        self.voltmeter2 = rm.open_resource(instruments[3])
+        self.voltmeter1 = rm.open_resource(instruments[1])
+        self.voltmeter2 = rm.open_resource(instruments[2])
         # self.voltmeter1.values_format.container = np.array
         # self.voltmeter2.values_format.container = np.array
         return self.voltmeter1, self.voltmeter2
