@@ -2,9 +2,9 @@
 
 Live data collection software for the Quantum Hall Effect lab.
 
-More information can be found here:
+More (potentially outdated) information can be found here:
 
-[Advanced Physics Lab]{http://www.phys.columbia.edu/~w3081/EKA_Org.html}
+[Advanced Physics Lab]{http://tesla.phys.columbia.edu:8080/eka/Quantum_Hall_Effect/}
 
 
 GUI is created using PyQt4. PyVISA provides a suitable frontend for 
